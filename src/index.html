@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline';">
+<title>HeroCraft Launcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0f1e3d;--navy-mid:#162444;--navy-light:#1e305a;--navy-border:#243668;
+  --gold:#f5c518;--gold-dark:#c9a010;--gold-light:#ffe066;
+  --text:#e8edf5;--muted:#7a90b8;--danger:#e05252;--success:#52c46a;
+}
+html,body{height:100%;background:var(--navy);font-family:'Inter',sans-serif;overflow:hidden;color:var(--text);}
+/* ── Titlebar ── */
+#titlebar{
+  -webkit-app-region:drag;
+  display:flex;align-items:center;justify-content:space-between;
+  height:40px;padding:0 14px;
+  background:rgba(10,18,40,0.95);
+  border-bottom:1px solid var(--navy-border);
+  position:relative;z-index:100;
+}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-logo{width:22px;height:22px;border-radius:4px;object-fit:contain;}
+.tb-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;}
+.tb-name span{color:var(--gold);}
+.tb-controls{display:flex;gap:8px;-webkit-app-region:no-drag;}
+.ctrl{
+  width:13px;height:13px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:8px;
+  transition:filter 0.15s;
+}
+.ctrl:hover{filter:brightness(1.3);}
+.ctrl-close{background:#e05252;}
+.ctrl-min{background:#e0a932;}
+.ctrl-max{background:#52c46a;}
+
+/* ── Layout ── */
+#app{display:flex;height:calc(100vh - 40px);}
+#sidebar{
+  width:52px;background:rgba(10,18,40,0.8);
+  border-right:1px solid var(--navy-border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:12px 0;gap:4px;
+}
+.nav-btn{
+  width:38px;height:38px;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--muted);background:none;border:none;
+  transition:all 0.15s;position:relative;
+}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,0.06);}
+.nav-btn.active{color:var(--gold);background:rgba(245,197,24,0.1);}
+.nav-btn::after{
+  content:attr(data-tip);
+  position:absolute;left:48px;background:#111;color:#fff;
+  padding:3px 8px;border-radius:5px;font-size:11px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity 0.15s;
+  font-family:'Inter',sans-serif;z-index:200;
+}
+.nav-btn:hover::after{opacity:1;}
+.nav-sep{width:30px;height:1px;background:var(--navy-border);margin:4px 0;}
+.nav-spacer{flex:1;}
+
+/* ── Pages ── */
+#content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.page{display:none;flex:1;overflow-y:auto;flex-direction:column;}
+.page.active{display:flex;}
+.page::-webkit-scrollbar{width:4px;}
+.page::-webkit-scrollbar-track{background:transparent;}
+.page::-webkit-scrollbar-thumb{background:var(--navy-border);border-radius:2px;}
+
+/* ── Home page ── */
+#banner{
+  background:linear-gradient(160deg,#091426 0%,#0d1f40 50%,#091426 100%);
+  border-bottom:2px solid var(--gold-dark);
+  padding:24px 24px 20px;
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+#banner::before{
+  content:'';position:absolute;inset:0;
+  background:url('assets/logo.png') right 20px center / 130px no-repeat;
+  opacity:0.12;
+}
+.banner-title{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:3px;line-height:1;}
+.banner-title span{color:var(--gold);}
+.banner-desc{font-size:11px;color:var(--muted);margin-top:6px;max-width:420px;line-height:1.6;}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.tag{
+  font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;
+  background:rgba(245,197,24,0.1);border:1px solid rgba(245,197,24,0.3);
+  color:var(--gold);letter-spacing:0.5px;
+}
+.status{display:flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--success);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 6px var(--success);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── Home body ── */
+.home-body{display:flex;gap:14px;padding:14px;flex:1;}
+.home-left{flex:1;display:flex;flex-direction:column;gap:12px;}
+.home-right{width:210px;display:flex;flex-direction:column;gap:12px;}
+
+.card{
+  background:var(--navy-light);border:1px solid var(--navy-border);
+  border-radius:10px;padding:12px 14px;
+}
+.card-title{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+
+/* News */
+.news-item{padding:8px 0;border-bottom:1px solid var(--navy-border);}
+.news-item:last-child{border-bottom:none;padding-bottom:0;}
+.news-hd{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;}
+.news-badge{font-size:9px;background:var(--gold);color:var(--navy);padding:1px 6px;border-radius:10px;font-weight:700;}
+.news-body{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat{background:var(--navy-mid);border:1px solid var(--navy-border);border-radius:8px;padding:10px;text-align:center;}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--gold);}
+.stat-lbl{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:.5px;}
+
+/* Modes */
+.modes{display:flex;flex-direction:column;gap:6px;}
+.mode-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;padding:5px 8px;border-radius:6px;
+  background:var(--navy-mid);border:1px solid var(--navy-border);cursor:pointer;
+  transition:border-color 0.15s;
+}
+.mode-row:hover{border-color:var(--gold-dark);}
+.mode-icon{font-size:14px;}
+.mode-name{font-weight:500;color:var(--text);}
+.mode-players{margin-left:auto;font-size:10px;color:var(--muted);}
+.mode-dot{width:6px;height:6px;border-radius:50%;background:var(--success);}
+
+/* Launch panel */
+.launch-panel{
+  background:var(--navy-mid);border-top:1px solid var(--navy-border);
+  padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.launch-config{flex:1;display:flex;flex-direction:column;gap:8px;}
+.lc-row{display:flex;align-items:center;gap:10px;}
+.lc-label{font-size:11px;color:var(--muted);white-space:nowrap;min-width:80px;}
+.sel{
+  flex:1;background:var(--navy-light);border:1px solid var(--navy-border);border-radius:7px;
+  padding:6px 10px;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;
+  cursor:pointer;appearance:none;-webkit-appearance:none;
+}
+.sel:focus{outline:none;border-color:var(--gold);}
+.sel option{background:#0f1e3d;}
+.ram-slider{flex:1;accent-color:var(--gold);cursor:pointer;height:4px;}
+.ram-lbl{font-size:12px;color:var(--gold);font-weight:600;min-width:38px;text-align:right;}
+
+.btn-play{
+  background:linear-gradient(135deg,var(--gold-dark),var(--gold));
+  border:none;border-radius:10px;padding:12px 32px;
+  font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;
+  color:var(--navy);cursor:pointer;letter-spacing:2px;
+  transition:transform .1s,filter .15s;white-space:nowrap;
+  min-width:140px;
+}
+.btn-play:hover{filter:brightness(1.1);transform:scale(1.02);}
+.btn-play:active{transform:scale(.97);}
+.btn-play:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none;}
+.btn-play.running{background:linear-gradient(135deg,#2a7c4f,#3db870);color:#fff;}
+
+.progress-wrap{display:flex;flex-direction:column;gap:5px;flex:1;}
+.progress-bar{height:3px;background:var(--navy-border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-radius:2px;transition:width .3s;}
+.progress-txt{font-size:10px;color:var(--muted);}
+
+/* ── Accounts page ── */
+.accounts-page{padding:20px;}
+.accounts-page h2{font-family:'Rajdhani',sans-serif;font-size:20px;color:var(--gold);margin-bottom:6px;}
+.accounts-page p{font-size:12px;color:var(--muted);margin-bottom:18px;}
+.account-methods{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.method-card{
+  background:var(--navy-light);border:1px solid var(--navy-border);border-radius:10px;
+  padding:16px;cursor:pointer;transition:border-color .15s;
+}
+.method-card:hover{border-color:var(--gold-dark);}
+.method-icon{font-size:28px;margin-bottom:8px;}
+.method-name{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;}
+.method-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.method-badge{
+  display:inline-block;font-size:9px;font-weight:700;padding:1px 7px;border-radius:10px;
+  margin-top:8px;
+}
+.badge-official{background:rgba(82,196,106,.15);color:var(--success);border:1px solid rgba(82,196,106,.3);}
+.badge-crack{background:rgba(245,197,24,.1);color:var(--gold);border:1px solid rgba(245,197,24,.3);}
+
+.section-sep{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 10px;}
+.accounts-list{display:flex;flex-direction:column;gap:8px;}
+.account-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--navy-light);border:1px solid var(--navy-border);border-radius:8px;
+  padding:10px 14px;
+}
+.account-avatar{
+  width:36px;height:36px;border-radius:6px;
+  background:var(--navy-mid);display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;overflow:hidden;
+}
+.account-avatar img{width:100%;height:100%;object-fit:cover;}
+.account-info{flex:1;}
+.account-name{font-size:13px;font-weight:600;}
+.account-type{font-size:10px;color:var(--muted);margin-top:2px;}
+.account-type .ms{color:var(--success);}
+.account-type .cr{color:var(--gold);}
+.btn-select{
+  font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--navy-border);
+  background:transparent;color:var(--text);cursor:pointer;transition:all .15s;
+}
+.btn-select:hover{border-color:var(--gold);color:var(--gold);}
+.btn-select.selected{background:rgba(245,197,24,.1);border-color:var(--gold);color:var(--gold);}
+.btn-del{
+  width:28px;height:28px;border-radius:6px;border:1px solid var(--navy-border);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.btn-del:hover{border-color:var(--danger);color:var(--danger);}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);
+  display:none;align-items:center;justify-content:center;z-index:1000;
+}
+.modal-overlay.show{display:flex;}
+.modal{
+  background:var(--navy-mid);border:1px solid var(--navy-border);
+  border-radius:12px;padding:24px;width:340px;
+}
+.modal h3{font-family:'Rajdhani',sans-serif;font-size:18px;margin-bottom:6px;}
+.modal p{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6;}
+.modal input{
+  width:100%;background:var(--navy-light);border:1px solid var(--navy-border);
+  border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);
+  font-family:'Inter',sans-serif;margin-bottom:12px;
+}
+.modal input::placeholder{color:var(--muted);}
+.modal input:focus{outline:none;border-color:var(--gold);}
+.modal-err{font-size:11px;color:var(--danger);margin-bottom:8px;display:none;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.btn-cancel{
+  padding:8px 16px;border-radius:7px;border:1px solid var(--navy-border);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:12px;
+}
+.btn-cancel:hover{color:var(--text);}
+.btn-confirm{
+  padding:8px 20px;border-radius:7px;border:none;
+  background:var(--gold);color:var(--navy);font-weight:700;cursor:pointer;font-size:12px;
+}
+.btn-confirm:hover{filter:brightness(1.1);}
+
+/* ── Settings ── */
+.settings-page{padding:20px;}
+.settings-page h2{font-family:'Rajdhani',sans-serif;font-size:20px;color:var(--gold);margin-bottom:18px;}
+.setting-group{background:var(--navy-light);border:1px solid var(--navy-border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.setting-row{
+  display:flex;align-items:center;padding:12px 16px;
+  border-bottom:1px solid var(--navy-border);
+}
+.setting-row:last-child{border-bottom:none;}
+.setting-info{flex:1;}
+.setting-label{font-size:13px;font-weight:500;}
+.setting-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.setting-val{font-size:12px;color:var(--gold);}
+.toggle{
+  width:38px;height:20px;border-radius:10px;border:none;cursor:pointer;
+  background:var(--navy-border);position:relative;transition:background .2s;flex-shrink:0;
+}
+.toggle.on{background:var(--gold);}
+.toggle::after{
+  content:'';position:absolute;width:14px;height:14px;border-radius:50%;
+  background:#fff;top:3px;left:3px;transition:left .2s;
+}
+.toggle.on::after{left:21px;}
+</style>
+</head>
+<body>
+
+<!-- Titlebar -->
+<div id="titlebar">
+  <div class="tb-left">
+    <img class="tb-logo" src="assets/logo.png" alt="HeroCraft">
+    <span class="tb-name">HERO<span>CRAFT</span> Launcher</span>
+  </div>
+  <div class="tb-controls">
+    <div class="ctrl ctrl-min" onclick="window.electronAPI.minimizeWindow()" title="Réduire"></div>
+    <div class="ctrl ctrl-max" onclick="window.electronAPI.maximizeWindow()" title="Agrandir"></div>
+    <div class="ctrl ctrl-close" onclick="window.electronAPI.closeWindow()" title="Fermer"></div>
+  </div>
+</div>
+
+<!-- App layout -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <button class="nav-btn active" data-page="home" data-tip="Accueil" onclick="showPage('home',this)">🏠</button>
+    <button class="nav-btn" data-page="accounts" data-tip="Comptes" onclick="showPage('accounts',this)">👤</button>
+    <button class="nav-btn" data-page="settings" data-tip="Paramètres" onclick="showPage('settings',this)">⚙️</button>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn" data-tip="Serveur web" onclick="window.electronAPI.openExternal('https://herocraft.servegame.com')">🌐</button>
+  </nav>
+
+  <!-- Content -->
+  <div id="content">
+
+    <!-- ══ Page : Home ══ -->
+    <div class="page active" id="page-home">
+
+      <!-- Banner -->
+      <div id="banner">
+        <div class="banner-title">HERO<span>CRAFT</span></div>
+        <div class="banner-desc">Serveur Mini-Jeux & PVP ⚔️<br>Venez jouer seul ou avec vos amis sur nos mini-jeux — Hikabrain, Blitz, Bedwars, Hungergames, Faction, et bien plus !</div>
+        <div class="tags">
+          <span class="tag">Mini-Jeux</span><span class="tag">PvP</span><span class="tag">Factions</span>
+          <span class="tag">Bedwars</span><span class="tag">Hungergames</span><span class="tag">Blitz</span>
+        </div>
+        <div class="status"><div class="dot"></div> <span id="server-addr">herocraft.servegame.com</span> · <span id="online-count">…</span> joueurs</div>
+      </div>
+
+      <!-- Body -->
+      <div class="home-body">
+        <div class="home-left">
+
+          <!-- News -->
+          <div class="card">
+            <div class="card-title">Actualités</div>
+            <div class="news-item">
+              <div class="news-hd">⚡ Nouveau mini-jeu : Spaceship ! <span class="news-badge">NOUVEAU</span></div>
+              <div class="news-body">Pilotez votre vaisseau spatial et détruisez vos adversaires dans cette arène explosive.</div>
+            </div>
+            <div class="news-item">
+              <div class="news-hd">🏆 Saison 4 Factions — Reset</div>
+              <div class="news-body">La saison 4 commence ! Nouveaux territoires, nouvelles récompenses et arènes PvP remaniées.</div>
+            </div>
+            <div class="news-item">
+              <div class="news-hd">🔧 Maintenance prévue</div>
+              <div class="news-body">Maintenance dimanche de 3h à 5h du matin pour mise à jour des plugins.</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="home-right">
+
+          <!-- Stats -->
+          <div class="card">
+            <div class="card-title">Serveur</div>
+            <div class="stats">
+              <div class="stat"><div class="stat-val" id="stat-online">—</div><div class="stat-lbl">En ligne</div></div>
+              <div class="stat"><div class="stat-val">1500</div><div class="stat-lbl">Max</div></div>
+              <div class="stat"><div class="stat-val">12</div><div class="stat-lbl">Mini-jeux</div></div>
+              <div class="stat"><div class="stat-val" id="stat-ping">—</div><div class="stat-lbl">Ping (ms)</div></div>
+            </div>
+          </div>
+
+          <!-- Modes -->
+          <div class="card">
+            <div class="card-title">Modes de jeu</div>
+            <div class="modes">
+              <div class="mode-row"><span class="mode-icon">🛏️</span><span class="mode-name">Bedwars</span><div class="mode-dot"></div><span class="mode-players" id="mp-bw">…</span></div>
+              <div class="mode-row"><span class="mode-icon">🍖</span><span class="mode-name">Hungergames</span><div class="mode-dot"></div><span class="mode-players" id="mp-hg">…</span></div>
+              <div class="mode-row"><span class="mode-icon">⚔️</span><span class="mode-name">Factions</span><div class="mode-dot"></div><span class="mode-players" id="mp-fac">…</span></div>
+              <div class="mode-row"><span class="mode-icon">🧠</span><span class="mode-name">Hikabrain</span><div class="mode-dot"></div><span class="mode-players" id="mp-hk">…</span></div>
+              <div class="mode-row"><span class="mode-icon">🚀</span><span class="mode-name">Spaceship</span><div class="mode-dot"></div><span class="mode-players" id="mp-ss">…</span></div>
+              <div class="mode-row"><span class="mode-icon">💣</span><span class="mode-name">TNTWars</span><div class="mode-dot"></div><span class="mode-players" id="mp-tnt">…</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Launch panel -->
+      <div class="launch-panel">
+        <div class="launch-config">
+          <div class="lc-row">
+            <span class="lc-label">Compte</span>
+            <select class="sel" id="account-select" style="flex:1;"></select>
+          </div>
+          <div class="lc-row">
+            <span class="lc-label">Version</span>
+            <select class="sel" id="version-select" style="flex:1;">
+              <option value="1.20.4">1.20.4 (recommandée)</option>
+              <option value="1.19.4">1.19.4</option>
+              <option value="1.18.2">1.18.2</option>
+              <option value="1.16.5">1.16.5</option>
+            </select>
+            <span class="lc-label" style="margin-left:12px;">RAM</span>
+            <input type="range" class="ram-slider" id="ram-slider" min="1" max="8" value="3" step="1">
+            <span class="ram-lbl" id="ram-lbl">3 Go</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <div class="progress-wrap" style="max-width:200px;">
+            <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+            <div class="progress-txt" id="prog-txt">Prêt</div>
+          </div>
+          <button class="btn-play" id="btn-play" onclick="launchGame()">JOUER ▶</button>
+        </div>
+      </div>
+
+    </div><!-- /page-home -->
+
+    <!-- ══ Page : Comptes ══ -->
+    <div class="page" id="page-accounts">
+      <div class="accounts-page">
+        <h2>👤 Gestion des comptes</h2>
+        <p>Connecte-toi avec ton compte Microsoft pour jouer avec ta skin officielle,<br>ou utilise un compte crack (pseudo libre, sans achat).</p>
+        <div class="account-methods">
+          <div class="method-card" onclick="startMicrosoftLogin()">
+            <div class="method-icon">🪟</div>
+            <div class="method-name">Compte Microsoft</div>
+            <div class="method-desc">Connexion officielle avec ton compte Minecraft acheté. Skin officielle, achievements, serveurs premium.</div>
+            <span class="method-badge badge-official">✓ OFFICIEL</span>
+          </div>
+          <div class="method-card" onclick="openCrackModal()">
+            <div class="method-icon">🎮</div>
+            <div class="method-name">Compte Crack</div>
+            <div class="method-desc">Joue avec un pseudo libre sans acheter Minecraft. Limité aux serveurs qui l'autorisent (mode hors-ligne).</div>
+            <span class="method-badge badge-crack">⚡ GRATUIT</span>
+          </div>
+        </div>
+        <div class="section-sep">Comptes enregistrés</div>
+        <div class="accounts-list" id="accounts-list">
+          <div style="color:var(--muted);font-size:12px;padding:10px 0;">Aucun compte ajouté.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Page : Paramètres ══ -->
+    <div class="page" id="page-settings">
+      <div class="settings-page">
+        <h2>⚙️ Paramètres</h2>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Répertoire Minecraft</div><div class="setting-sub" id="mc-dir">—</div></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Adresse du serveur</div><div class="setting-sub">herocraft.servegame.com</div></div>
+            <div class="setting-val">:25565</div>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Connexion auto au serveur</div><div class="setting-sub">Se connecte directement à HeroCraft au lancement</div></div>
+            <button class="toggle on" id="toggle-autoconnect" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Fermer le launcher au lancement</div><div class="setting-sub">Ferme la fenêtre une fois Minecraft ouvert</div></div>
+            <button class="toggle" id="toggle-close" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Mode plein écran</div><div class="setting-sub">Lance Minecraft en plein écran automatiquement</div></div>
+            <button class="toggle" id="toggle-fs" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Version du launcher</div></div>
+            <div class="setting-val">v1.0.0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- Modal crack -->
+<div class="modal-overlay" id="modal-crack">
+  <div class="modal">
+    <h3>🎮 Compte Crack</h3>
+    <p>Choisis un pseudo (3-16 caractères, lettres, chiffres et _ uniquement).<br>Note : certains mini-jeux peuvent être limités en mode hors-ligne.</p>
+    <input type="text" id="crack-username" placeholder="Ton pseudo Minecraft" maxlength="16">
+    <div class="modal-err" id="crack-err"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modal-crack')">Annuler</button>
+      <button class="btn-confirm" onclick="addCrackAccount()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────
+let accounts = [];
+let selectedAccountId = null;
+
+// ── Pages ────────────────────────────────────────────────────────────────
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ── RAM slider ────────────────────────────────────────────────────────────
+document.getElementById('ram-slider').addEventListener('input', function() {
+  document.getElementById('ram-lbl').textContent = this.value + ' Go';
+});
+
+// ── Comptes ───────────────────────────────────────────────────────────────
+async function loadAccounts() {
+  accounts = await window.electronAPI.getAccounts();
+  renderAccounts();
+  renderAccountSelect();
+}
+
+function renderAccounts() {
+  const list = document.getElementById('accounts-list');
+  if (!accounts.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:10px 0;">Aucun compte ajouté.</div>';
+    return;
+  }
+  list.innerHTML = accounts.map(a => `
+    <div class="account-row" id="row-${a.id}">
+      <div class="account-avatar">${a.type === 'microsoft' ? '🪟' : '🎮'}</div>
+      <div class="account-info">
+        <div class="account-name">${esc(a.username)}</div>
+        <div class="account-type">
+          ${a.type === 'microsoft'
+            ? '<span class="ms">✓ Compte Microsoft officiel</span>'
+            : '<span class="cr">⚡ Compte Crack (hors-ligne)</span>'}
+        </div>
+      </div>
+      <button class="btn-select ${selectedAccountId === a.id ? 'selected' : ''}" onclick="selectAccount('${a.id}')">
+        ${selectedAccountId === a.id ? '✓ Sélectionné' : 'Sélectionner'}
+      </button>
+      <button class="btn-del" onclick="deleteAccount('${a.id}')" title="Supprimer">🗑</button>
+    </div>
+  `).join('');
+}
+
+function renderAccountSelect() {
+  const sel = document.getElementById('account-select');
+  if (!accounts.length) {
+    sel.innerHTML = '<option value="">— Aucun compte —</option>';
+    return;
+  }
+  sel.innerHTML = accounts.map(a =>
+    `<option value="${a.id}" ${a.id === selectedAccountId ? 'selected' : ''}>${esc(a.username)} (${a.type === 'microsoft' ? 'Microsoft' : 'Crack'})</option>`
+  ).join('');
+  if (!selectedAccountId && accounts.length) {
+    selectedAccountId = accounts[0].id;
+    sel.value = selectedAccountId;
+  }
+}
+
+function selectAccount(id) {
+  selectedAccountId = id;
+  renderAccounts();
+  renderAccountSelect();
+}
+
+async function deleteAccount(id) {
+  await window.electronAPI.removeAccount(id);
+  await loadAccounts();
+}
+
+// ── Microsoft login ───────────────────────────────────────────────────────
+async function startMicrosoftLogin() {
+  setStatus('Ouverture de la connexion Microsoft…', 20);
+  const res = await window.electronAPI.microsoftLogin();
+  if (res.success) {
+    await loadAccounts();
+    selectAccount(res.account.id);
+    showPage('home', document.querySelector('[data-page="home"]'));
+    setStatus('✓ Connecté en tant que ' + res.account.username, 100);
+    setTimeout(() => setStatus('Prêt', 0), 3000);
+  } else {
+    setStatus('Erreur : ' + res.error, 0);
+  }
+}
+
+// ── Crack modal ───────────────────────────────────────────────────────────
+function openCrackModal() {
+  document.getElementById('crack-username').value = '';
+  document.getElementById('crack-err').style.display = 'none';
+  document.getElementById('modal-crack').classList.add('show');
+  setTimeout(() => document.getElementById('crack-username').focus(), 100);
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+document.getElementById('crack-username').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addCrackAccount();
+});
+
+async function addCrackAccount() {
+  const username = document.getElementById('crack-username').value.trim();
+  const errEl = document.getElementById('crack-err');
+  const res = await window.electronAPI.addCrackAccount(username);
+  if (res.success) {
+    closeModal('modal-crack');
+    await loadAccounts();
+    selectAccount(res.account.id);
+    showPage('home', document.querySelector('[data-page="home"]'));
+  } else {
+    errEl.textContent = res.error;
+    errEl.style.display = 'block';
+  }
+}
+
+// ── Lancement ─────────────────────────────────────────────────────────────
+const LAUNCH_STEPS = [
+  [10, 'Vérification du compte…'],
+  [25, 'Vérification des fichiers…'],
+  [45, 'Chargement de la version…'],
+  [65, 'Chargement des ressources…'],
+  [80, 'Connexion à herocraft.servegame.com…'],
+  [95, 'Initialisation…'],
+];
+
+function setStatus(text, pct) {
+  document.getElementById('prog-txt').textContent = text;
+  document.getElementById('prog-fill').style.width = pct + '%';
+}
+
+async function launchGame() {
+  const accountId = document.getElementById('account-select').value;
+  if (!accountId) {
+    showPage('accounts', document.querySelector('[data-page="accounts"]'));
+    return;
+  }
+  const version = document.getElementById('version-select').value;
+  const ram = document.getElementById('ram-slider').value;
+  const btn = document.getElementById('btn-play');
+  btn.disabled = true;
+  btn.textContent = 'CHARGEMENT…';
+
+  let i = 0;
+  const stepInterval = setInterval(() => {
+    if (i < LAUNCH_STEPS.length) {
+      const [pct, msg] = LAUNCH_STEPS[i++];
+      setStatus(msg, pct);
+    } else {
+      clearInterval(stepInterval);
+    }
+  }, 500);
+
+  const res = await window.electronAPI.launchGame({ accountId, version, ram: parseInt(ram) });
+
+  clearInterval(stepInterval);
+  if (res.success) {
+    setStatus('✓ Minecraft lancé ! Bonne partie sur HeroCraft ⚔️', 100);
+    btn.textContent = 'EN JEU ✓';
+    btn.classList.add('running');
+    setTimeout(() => {
+      setStatus('Prêt', 0);
+      btn.textContent = 'JOUER ▶';
+      btn.classList.remove('running');
+      btn.disabled = false;
+    }, 5000);
+  } else {
+    setStatus('❌ ' + res.error, 0);
+    btn.textContent = 'JOUER ▶';
+    btn.disabled = false;
+  }
+}
+
+// ── Stats serveur (simulation — remplacer par vraie API si dispo) ──────────
+function updateStats() {
+  const base = 120 + Math.floor(Math.random() * 80);
+  document.getElementById('stat-online').textContent = base;
+  document.getElementById('online-count').textContent = base;
+  document.getElementById('stat-ping').textContent = 18 + Math.floor(Math.random() * 30);
+  document.getElementById('mp-bw').textContent = Math.floor(base * 0.22) + ' j.';
+  document.getElementById('mp-hg').textContent = Math.floor(base * 0.18) + ' j.';
+  document.getElementById('mp-fac').textContent = Math.floor(base * 0.25) + ' j.';
+  document.getElementById('mp-hk').textContent = Math.floor(base * 0.12) + ' j.';
+  document.getElementById('mp-ss').textContent = Math.floor(base * 0.10) + ' j.';
+  document.getElementById('mp-tnt').textContent = Math.floor(base * 0.13) + ' j.';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadAccounts();
+  updateStats();
+  setInterval(updateStats, 10000);
+
+  const dataDir = await window.electronAPI.getDataDir();
+  document.getElementById('mc-dir').textContent = dataDir;
+
+  window.electronAPI.onLaunchStatus(({ step, progress }) => {
+    setStatus(step, progress);
+  });
+});
+</script>
+</body>
+</html>
